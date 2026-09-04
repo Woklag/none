@@ -47,8 +47,8 @@
 <button id="test-btn" onclick="forceNewWord()">Попробовать другое (тест)</button>
 
 <script>
-    const WIKI_URL = "https://ru.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*";
-    const WIKTIONARY_URL = "https://ru.wiktionary.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*";
+    // ВСТАВЬТЕ СЮДА АДРЕС ВАШЕГО CLOUDFLARE WORKER
+    const WORKER_URL = "https://YOUR-WORKER-URL.workers.dev"; 
 
     function getMoscowDateKey() {
         const now = new Date();
@@ -56,18 +56,17 @@
         return moscowTime.toISOString().split('T')[0];
     }
 
-    async function fetchWord() {
-        // 50% шанс выбрать Википедию или Викисловарь
-        const useWiki = Math.random() < 0.5;
-        const url = useWiki ? WIKI_URL : WIKTIONARY_URL;
-        
+    async function fetchWordFromWorker() {
         try {
-            const response = await fetch(url);
+            const response = await fetch(WORKER_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
-            return data.query.random[0].title;
+            return data.word || "...";
         } catch (error) {
-            console.error("Ошибка:", error);
-            return "красивая";
+            console.error("Ошибка при получении слова от воркера:", error);
+            return "...";
         }
     }
 
@@ -76,21 +75,33 @@
         const storedDate = localStorage.getItem('julia_date');
         const storedWord = localStorage.getItem('julia_word');
 
+        // Если дата совпадает и есть слово в памяти - показываем его
         if (storedDate === dateKey && storedWord && !window.forceMode) {
             document.getElementById('content').innerText = `Юля сегодня ${storedWord}`;
             return;
         }
 
-        const newWord = await fetchWord();
-        localStorage.setItem('julia_date', dateKey);
-        localStorage.setItem('julia_word', newWord);
+        // Иначе запрашиваем у воркера
+        const newWord = await fetchWordFromWorker();
+        
+        // Сохраняем только если получили не ошибку
+        if (newWord !== "...") {
+            localStorage.setItem('julia_date', dateKey);
+            localStorage.setItem('julia_word', newWord);
+        }
+        
         document.getElementById('content').innerText = `Юля сегодня ${newWord}`;
     }
 
     window.forceNewWord = async function() {
         window.forceMode = true;
         document.getElementById('content').innerText = "Загрузка...";
-        const newWord = await fetchWord();
+        const newWord = await fetchWordFromWorker();
+        if (newWord !== "...") {
+            const dateKey = getMoscowDateKey();
+            localStorage.setItem('julia_date', dateKey);
+            localStorage.setItem('julia_word', newWord);
+        }
         document.getElementById('content').innerText = `Юля сегодня ${newWord}`;
         window.forceMode = false;
     };
