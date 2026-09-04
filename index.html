@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Юля сегодня...</title>
+    <title>бля, сегодня...</title>
     <style>
         body {
             margin: 0;
@@ -36,7 +36,7 @@
     </style>
 </head>
 <body>
-    <div id="word-display"><span class="loading-text">Юля сегодня</span></div>
+    <div id="word-display"><span class="loading-text">юля сегодня</span></div>
     <script>
         const WORKER_URL = 'https://yulia-word.ratcatsnack.workers.dev';
         const wordDisplay = document.getElementById('word-display');
@@ -58,13 +58,13 @@
                 
                     const cleanWord = data.word.toLowerCase().replace(/\s*[\(\[\{].*$/, '');
                     
-                    wordDisplay.innerHTML = 'Юля сегодня ' + cleanWord;
+                    wordDisplay.innerHTML = 'юля сегодня ' + cleanWord;
                 } else {
                     throw new Error('Получено некорректное слово: ' + data.word);
                 }
             } catch (error) {
                 console.error('Ошибка при получении слова:', error);
-                wordDisplay.textContent = 'Ваш интернет говно...';
+                wordDisplay.textContent = 'включите впн...';
                 
                 document.body.style.background = 'linear-gradient(to bottom, white 33.33%, blue 33.33%, blue 66.66%, red 66.66%)';
                 
