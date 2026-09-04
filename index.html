@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            padding: 20px; /* Исправлено с 20 на 20px */
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,7 +17,7 @@
             text-align: center;
             color: black;
             overflow: hidden;
-            transition: background 0.5s ease; /* Плавный переход фона при ошибке */
+            transition: background 0.5s ease;
         }
         #word-display {
             font-size: 1.5rem;
@@ -55,7 +55,10 @@
                 const data = await response.json();
                 
                 if (data.word && data.word !== '...' && data.word !== 'Ошибка') {
-                    wordDisplay.innerHTML = 'Юля сегодня ' + data.word;
+                
+                    const cleanWord = data.word.toLowerCase().replace(/\s*[\(\[\{].*$/, '');
+                    
+                    wordDisplay.innerHTML = 'Юля сегодня ' + cleanWord;
                 } else {
                     throw new Error('Получено некорректное слово: ' + data.word);
                 }
@@ -69,7 +72,6 @@
             }
         }
         
-        // Запуск при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
             fetchWord();
         });
